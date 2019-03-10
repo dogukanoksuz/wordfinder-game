@@ -39,6 +39,23 @@ void Database::importDatabase(){
 }
 
 void Database::addToTree(string str, string sorted, Node* iter, int letterPos){ 
+    // karaliste
+    // 
+    // mümkün harfler
+    // abn, abr, anr, bnr, ooo 0
+    //
+    // baban
+    // 4
+    //
+    // abnor arobono       // bilgisayar
+    // 11111
+    // abn, ooo, abr, bnr, aoo, boo, noo, roo, aob, aon, aor, bon, bor, nor 
+    // 
+    // abklo   kolba         // insan
+    // 
+    // kullancı bilgisayarın tuttuğu kelimedeki harf sayısına puan verecek 5 puan
+    // sadece ooo verdiğimizde ab ve r harflerinin olmadığı kelimeleri de seçecek
+    // Sorulacak sorular: 3 5
     //cout << "addToTree çalıştı." << endl;
     if( !(iter->children.empty()) ){
         //cout << "iter->children boş değil" << endl;
@@ -46,6 +63,7 @@ void Database::addToTree(string str, string sorted, Node* iter, int letterPos){
             if( child->ch == sorted[letterPos] ){
                 //cout << "child->ch node'u iter'in çocuklarında var" << endl;
                 if( letterPos+1 == sorted.size() ){
+                    // TODO: üzerine yazma işlemini kontrol et
                     //cout << "kelime eklendi" << endl;
                     iter->word = str;
                     return;
@@ -57,7 +75,6 @@ void Database::addToTree(string str, string sorted, Node* iter, int letterPos){
             }
         }
     }
-
     iter->children.push_back(new Node(sorted[letterPos]));
     //cout << "children.pushback çalıştı: " << sorted[letterPos] << endl;
 
@@ -72,7 +89,7 @@ void Database::addToTree(string str, string sorted, Node* iter, int letterPos){
     return;
 }
 
-
+// Sözlükten rastgele bir kelime seçer
 void Database::pickRandom(Node* iter){
     if( !iter->children.empty() ){
         int num = rand()%iter->children.size();
