@@ -23,7 +23,7 @@ public:
     void importDatabase();
     void addToTree(string str, string sorted, Node* iter, int letterPos);
     void pickRandom(Node* iter);
-    void narrow(int canbe, int pos, string newStr);
+    void narrow(int score, int pos, string newStr);
     void printAllStr();
 private:
     string randomPick;

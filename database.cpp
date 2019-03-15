@@ -107,14 +107,14 @@ void Database::start(){
     cin >>ch;
 }
 
-void Database::narrow( int canbe, int pos, string newStr ){
+void Database::narrow( int score, int pos, string newStr ){
     for(int i=pos; i<str.size(); i++){
-        narrow(canbe, ++pos, newStr);
-        if( canbe - values[i] >= 0 ){
+        narrow(score, ++pos, newStr);
+        if( score - values[i] >= 0 ){
             newStr.push_back(str[i]);
-            canbe -= values[i];
+            score -= values[i];
         }
-        if( canbe == 0){
+        if( score == 0){
             for(auto str : allStr) if( str == newStr ) return;
             allStr.push_back(newStr);
         }
