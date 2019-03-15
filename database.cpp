@@ -39,23 +39,6 @@ void Database::importDatabase(){
 }
 
 void Database::addToTree(string str, string sorted, Node* iter, int letterPos){ 
-    // karaliste
-    // 
-    // mümkün harfler
-    // abn, abr, anr, bnr, ooo 0
-    //
-    // baban
-    // 4
-    //
-    // abnor arobono       // bilgisayar
-    // 11111
-    // abn, ooo, abr, bnr, aoo, boo, noo, roo, aob, aon, aor, bon, bor, nor 
-    // 
-    // abklo   kolba         // insan
-    // 
-    // kullancı bilgisayarın tuttuğu kelimedeki harf sayısına puan verecek 5 puan
-    // sadece ooo verdiğimizde ab ve r harflerinin olmadığı kelimeleri de seçecek
-    // Sorulacak sorular: 3 5
     //cout << "addToTree çalıştı." << endl;
     if( !(iter->children.empty()) ){
         //cout << "iter->children boş değil" << endl;
@@ -95,35 +78,67 @@ void Database::pickRandom(Node* iter){
         int num = rand()%iter->children.size();
         iter = iter->children[num];
         pickRandom(iter);
-    }else
+    }else{
         randomPick = iter->word.back();
+        auto tempStr = randomPick;
+        sort(tempStr.begin(), tempStr.end());
+        for( auto ch1 : tempStr ){
+            bool check = true;  // kelimede bu harf var mı kontrolü
+            for( auto ch2 : randomPickSorted ){
+                if( ch1 == ch2 )
+                    check = false;
+            }
+            if( check )
+                randomPickSorted.push_back(ch1);
+        }
+    
+        values.resize(randomPickSorted.size());
+
+        int i=0;
+        int counter = 0;
+        for( auto ch1 : randomPickSorted ){
+            for( auto ch2 : tempStr ){
+                if( ch1 == ch2 ){
+                    counter++;
+                }
+            }
+            values[i] = counter;
+            counter = 0;
+            i++;
+        }
+    }
 }
 
 void Database::start(){
     importDatabase();
     pickRandom(root);
     cout << randomPick << endl;
-    char ch;
-    cin >>ch;
+    cout << randomPickSorted << endl;
+    for(auto val : values)
+        cout << val;
+    cout << endl << "Score : ";
+    int score;
+    cin >> score;
+
+    setSubsets(score, 0, "");
 }
 
-void Database::narrow( int score, int pos, string newStr ){
-    for(int i=pos; i<str.size(); i++){
-        narrow(score, ++pos, newStr);
+void Database::setSubsets( int score, int pos = 0, string newStr = "" ){
+    for(int i=pos; i<randomPickSorted.size(); i++){
+        setSubsets(score, ++pos, newStr);
         if( score - values[i] >= 0 ){
-            newStr.push_back(str[i]);
+            newStr.push_back(randomPickSorted[i]);
             score -= values[i];
         }
         if( score == 0){
-            for(auto str : allStr) if( str == newStr ) return;
-            allStr.push_back(newStr);
+            for(auto str : possibleLetters) if( str == newStr ) return;
+            possibleLetters.push_back(newStr);
         }
-        cout << newStr << endl;
     }
 }
 
 void Database::printAllStr(){
     cout << endl << "all str : " << endl;
-    for(auto str : allStr)
+    for(auto str : possibleLetters)
         cout << str << endl;
 }

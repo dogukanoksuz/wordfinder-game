@@ -23,13 +23,15 @@ public:
     void importDatabase();
     void addToTree(string str, string sorted, Node* iter, int letterPos);
     void pickRandom(Node* iter);
-    void narrow(int score, int pos, string newStr);
+    void setSubsets(int score, int pos, string newStr);
     void printAllStr();
 private:
-    string randomPick;
     wchar_t alphabet[23];
 
-    string str = "abnor"; 
-    vector<int> values = {1,1,1,3,1};
-    vector<string> allStr;
+    string randomPick;
+    string randomPickSorted; 
+    vector<int> values;
+    vector<string> possibleLetters;
+    vector<char> exactLetters;
+    vector<char> blackListLetters;
 };
