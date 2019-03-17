@@ -1,4 +1,10 @@
 #include "database.h"
+/*
+    Blacklist içinde bulunan harfler ağaçtan silinmeli.
+    Silme konusunda sıkıntılar var:
+        Bolca Seg Fault hatası
+        Silinen node'ların üst node'larında kelime bulunamaması
+*/
 
 Database::Database(){
     wchar_t alphabet2[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 
@@ -19,6 +25,38 @@ Database::Database(){
     srand(time(NULL));
 }
 
+void Database::start(){
+    importDatabase();
+
+    while(1){
+        cout << endl << endl << endl;
+        string oldPick = randomPick;
+        pickRandom(root);
+        calculateLetterValues();
+        if(randomPick == oldPick) continue;
+
+        cout << randomPick << endl;
+        cout << randomPickSorted << endl;
+        for(auto val : values)
+            cout << val;
+        cout << endl << "Score : ";
+        int score;
+        cin >> score;
+
+        setPossibleLetters(score, 0, "");
+        setBlacklist();
+        setExactLetters();
+        
+        printAllStr();
+
+        // kesin bulunan harfleri bulduktan sonra ihtiyacımız kalmadı
+        possibleLetters.clear();
+
+
+        simplifyTree(root);
+    }
+}
+
 void Database::importDatabase(){
     ifstream file;
     file.open("wordlist.txt");
@@ -30,7 +68,7 @@ void Database::importDatabase(){
         string sorted = str;
         sort(sorted.begin(), sorted.end());
         
-//        cout << str << " " << sorted << endl; 
+        //cout << str << " " << sorted << endl; 
         //cout << sorted << " ekleniyor." << endl; 
         addToTree(str, sorted, root, 0);
     }
@@ -74,71 +112,201 @@ void Database::addToTree(string str, string sorted, Node* iter, int letterPos){
 
 // Sözlükten rastgele bir kelime seçer
 void Database::pickRandom(Node* iter){
-    if( !iter->children.empty() ){
-        int num = rand()%iter->children.size();
-        iter = iter->children[num];
-        pickRandom(iter);
-    }else{
+/*     if( !iter->word.empty() ){
         randomPick = iter->word.back();
-        auto tempStr = randomPick;
-        sort(tempStr.begin(), tempStr.end());
-        for( auto ch1 : tempStr ){
-            bool check = true;  // kelimede bu harf var mı kontrolü
-            for( auto ch2 : randomPickSorted ){
-                if( ch1 == ch2 )
-                    check = false;
-            }
-            if( check )
-                randomPickSorted.push_back(ch1);
+    }else{
+        if( !iter->children.empty() ){
+            int i;
+            for(i=0; iter->children[i]->inBlackList == true; i++);
+            iter = iter->children[i];
+            pickRandom(iter);
+        }else{
+            cout << "Herhangi bir eşleşme bulunamadı!" << endl;
+            return;
         }
-    
-        values.resize(randomPickSorted.size());
+    } */
 
+    if( !iter->children.empty() ){
+        int num;
         int i=0;
-        int counter = 0;
-        for( auto ch1 : randomPickSorted ){
-            for( auto ch2 : tempStr ){
-                if( ch1 == ch2 ){
-                    counter++;
-                }
-            }
-            values[i] = counter;
-            counter = 0;
+        bool cf = false;
+        do{
+            num = rand() % iter->children.size();
             i++;
+            if(iter->children[num]->inBlackList == false)
+                break;
+            if(i>iter->children.size()*2){
+                break;
+                cf = true;
+            }
+        }while(1);
+        if(!cf){
+            iter = iter->children[num];
+           // cout << "Şuan ch: " << iter->ch << " bl: " << iter->inBlackList << endl;
+            pickRandom(iter);
+        }else{
+            if(iter->word.empty() ){
+                cout << "Buda boş!" << endl;
+            } else{
+                    
+                int num = rand() % iter->word.size();
+                randomPick = iter->word[num];
+                return;
+
+            }
         }
+    }else{
+        int num = rand() % iter->word.size();
+        randomPick = iter->word[num];
+        return;
     }
 }
 
-void Database::start(){
-    importDatabase();
-    pickRandom(root);
-    cout << randomPick << endl;
-    cout << randomPickSorted << endl;
-    for(auto val : values)
-        cout << val;
-    cout << endl << "Score : ";
-    int score;
-    cin >> score;
-
-    setSubsets(score, 0, "");
+void Database::calculateLetterValues(){
+    randomPickSorted.clear();
+    string tempStr = randomPick;
+    sort(tempStr.begin(), tempStr.end());
+    for( auto ch1 : tempStr ){
+        bool check = true;  // kelimede bu harf var mı kontrolü
+        for( auto ch2 : randomPickSorted ){
+            if( ch1 == ch2 )
+                check = false;
+        }
+        if( check )
+            randomPickSorted.push_back(ch1);
+    }
+    // Seçilen kelimenin harf ağırlıkları hesaplanır.
+    values.resize(randomPickSorted.size());
+    int i=0;
+    int counter = 0;
+    for( auto ch1 : randomPickSorted ){
+        for( auto ch2 : tempStr ){
+            if( ch1 == ch2 ){
+                counter++;
+            }
+        }
+        values[i] = counter;
+        counter = 0;
+        i++;
+    }
 }
 
-void Database::setSubsets( int score, int pos = 0, string newStr = "" ){
+void Database::simplifyTree(Node *iter){
+    if( !iter->children.empty() ){
+        for(int i=0; i<iter->children.size(); i++){
+            if(iter->children[i]->inBlackList)
+                continue;
+            for(auto bl : blackListLetters){
+                if(iter->children[i]->ch == bl ){
+                    iter->children[i]->inBlackList = true;
+                }
+            }
+            simplifyTree(iter->children[i]);
+        } 
+    }
+/*         for(auto node : iter->children){
+            if(node->inBlackList)   
+                continue;
+            for(auto bl : blackListLetters){
+                if(node->ch == bl){
+                    node->inBlackList = true;
+                    cout << node->ch << " elendi" << endl;
+                }
+            }
+            simplifyTree(node);
+        }
+    }
+ */   /*  for(auto node : iter->children){
+        for(auto bl : blackListLetters){
+            if( node->ch == bl){
+                node->inBlackList = true;
+            }
+        }
+        if(!node->children.empty())
+            simplifyTree(node);
+    } */
+}
+
+void Database::setPossibleLetters( int score, int pos = 0, string newStr = "" ){
     for(int i=pos; i<randomPickSorted.size(); i++){
-        setSubsets(score, ++pos, newStr);
+        setPossibleLetters(score, ++pos, newStr);
         if( score - values[i] >= 0 ){
             newStr.push_back(randomPickSorted[i]);
             score -= values[i];
         }
         if( score == 0){
             for(auto str : possibleLetters) if( str == newStr ) return;
+            for(auto bl : blackListLetters) if( isContain(newStr, bl)) return;
             possibleLetters.push_back(newStr);
         }
     }
 }
 
+void Database::setBlacklist(){
+    for( auto c : randomPickSorted){
+        //cout << "Karakter: " << c << endl;
+        bool found = false;
+        for( auto str : possibleLetters){
+            //cout << "Karşılaştırma : " << c << " : " << str << " : " << isContain(str, c) <<endl;
+            found = isContain(str, c);
+            if( found ) break;
+        }
+        if( found == false ){
+            bool isAlreadyAdded = false;
+            for(auto bl : blackListLetters)
+                if(bl == c )
+                    isAlreadyAdded = true;
+            if(isAlreadyAdded == false)
+                blackListLetters.push_back(c);
+        }
+    }
+}
+
+void Database::setExactLetters(){
+    // intersections
+    for(auto str1 : possibleLetters){
+        for(auto ch : str1){
+            bool isFound;
+            for(auto str2 : possibleLetters){
+                isFound = false;
+                for(auto c : str2){
+                    if( c == ch ) 
+                        isFound = true;
+                }
+                if(!isFound)
+                    break;
+            }
+            if(isFound){
+                bool itContain = false;
+                for(auto c : exactLetters)
+                    if(ch == c)
+                        itContain = true;
+                if( itContain == false)
+                    exactLetters.push_back(ch);
+            }
+        }
+    }
+
+}
+
 void Database::printAllStr(){
-    cout << endl << "all str : " << endl;
+    cout << endl << "Possible Letters: " << endl;
     for(auto str : possibleLetters)
-        cout << str << endl;
+        cout << str << " ";
+
+    cout << endl << "BlackList Letters: " << endl;
+    for(auto c : blackListLetters)
+        cout << c << " ";
+    
+    cout << endl << "Exact Letters: " << endl;
+    for(auto c : exactLetters)
+        cout << c << " ";
+}
+
+bool Database::isContain(string str, char ch){
+    for( auto c : str ){
+        if( ch == c )
+            return true;
+    }
+    return false;
 }

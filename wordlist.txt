@@ -2542,7 +2542,7 @@ aport
 aposteriori
 apostrof
 aposi
-apothéoser
+apotheoser
 apotr
 appassionato
 apraksi
@@ -5563,7 +5563,7 @@ bebeklesme
 bebeklesmek
 bebeklik
 beberuhi
-bécasse
+becasse
 becayis
 becellesme
 becellesmek
@@ -32392,7 +32392,7 @@ legal
 legallesme
 legallesmek
 legato
-légende
+legende
 legorn
 legen
 legenolcum
@@ -40181,7 +40181,7 @@ pehpehlemek
 pejmurde
 pejmurdelik
 pejoratif
-péjoratif
+pejoratif
 pek
 pekala
 pekce
@@ -45144,8 +45144,8 @@ simsariye
 simsarlik
 simsiyah
 simultane
-simultanéisme
-simultanéité
+simultaneisme
+simultaneite
 simurg
 simulasyon
 simulator
